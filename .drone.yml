@@ -1,0 +1,244 @@
+---
+kind: pipeline
+type: kubernetes
+name: linter
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: markdown lint
+  commands:
+  - markdownlint *.md
+  image: docker.io/volkerraschek/markdownlint:0.28.1
+  resources:
+    limits:
+      cpu: 50
+      memory: 50M
+
+- name: email-notification
+  environment:
+    PLUGIN_HOST:
+      from_secret: smtp_host
+    PLUGIN_USERNAME:
+      from_secret: smtp_username
+    PLUGIN_PASSWORD:
+      from_secret: smtp_password
+    PLUGIN_FROM:
+      from_secret: smtp_mail_address
+  image: docker.io/drillster/drone-email:latest
+  resources:
+    limits:
+      cpu: 50
+      memory: 25M
+  when:
+    status:
+    - changed
+    - failure
+
+trigger:
+  event:
+    exclude:
+    - tag
+---
+kind: pipeline
+type: docker
+name: latest-amd64
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build
+  image: plugins/docker
+  settings:
+    dockerfile: Dockerfile
+    auto_tag: false
+    tags: latest-amd64
+    repo: volkerraschek/db-wait
+    username:
+      from_secret: container_image_registry_user
+    password:
+      from_secret: container_image_registry_password
+  volumes:
+  - name: docker_socket
+    path: /var/run/docker.sock
+  when:
+    branch:
+    - master
+
+- name: notify
+  image: drillster/drone-email
+  environment:
+    PLUGIN_HOST:
+      from_secret: smtp_host
+    PLUGIN_USERNAME:
+      from_secret: smtp_username
+    PLUGIN_PASSWORD:
+      from_secret: smtp_password
+    PLUGIN_FROM:
+      from_secret: smtp_mail_address
+  when:
+    status:
+    - changed
+    - failure
+
+volumes:
+- name: docker_socket
+  host:
+    path: /var/run/docker.sock
+
+trigger:
+  event:
+    exclude:
+    - tag
+
+---
+kind: pipeline
+type: docker
+name: latest-armv7
+
+platform:
+  os: linux
+  arch: arm
+
+steps:
+- name: build
+  image: plugins/docker
+  settings:
+    dockerfile: Dockerfile
+    auto_tag: false
+    tags: latest-armv7
+    repo: volkerraschek/db-wait
+    username:
+      from_secret: container_image_registry_user
+    password:
+      from_secret: container_image_registry_password
+  when:
+    branch:
+    - master
+
+- name: notify
+  image: drillster/drone-email
+  environment:
+    PLUGIN_HOST:
+      from_secret: smtp_host
+    PLUGIN_USERNAME:
+      from_secret: smtp_username
+    PLUGIN_PASSWORD:
+      from_secret: smtp_password
+    PLUGIN_FROM:
+      from_secret: smtp_mail_address
+  volumes:
+  - name: docker_socket
+    path: /var/run/docker.sock
+  when:
+    status:
+    - changed
+    - failure
+
+volumes:
+- name: docker_socket
+  host:
+    path: /var/run/docker.sock
+
+trigger:
+  event:
+    exclude:
+    - tag
+
+---
+kind: pipeline
+type: kubernetes
+name: latest-manifest
+
+steps:
+- name: build-manifest
+  image: plugins/manifest
+  settings:
+    auto_tag: false
+    ignore_missing: true
+    spec: manifest.tmpl
+    username:
+      from_secret: container_image_registry_user
+    password:
+      from_secret: container_image_registry_password
+
+- name: notify
+  image: docker.io/drillster/drone-email:latest
+  environment:
+    PLUGIN_HOST:
+      from_secret: smtp_host
+    PLUGIN_USERNAME:
+      from_secret: smtp_username
+    PLUGIN_PASSWORD:
+      from_secret: smtp_password
+    PLUGIN_FROM:
+      from_secret: smtp_mail_address
+  resources:
+    limits:
+      cpu: 50
+      memory: 25M
+  when:
+    status:
+    - changed
+    - failure
+
+depends_on:
+- latest-amd64
+- latest-armv7
+
+trigger:
+  event:
+    exclude:
+    - tag
+---
+kind: pipeline
+type: kubernetes
+name: sync
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: github
+  image: docker.io/appleboy/drone-git-push:latest
+  resources:
+    limits:
+      cpu: 50
+      memory: 25M
+  settings:
+    branch: master
+    remote: ssh://git@github.com/volker-raschek/db-wait.git
+    force: true
+    ssh_key:
+      from_secret: ssh_key
+
+- name: email-notification
+  environment:
+    PLUGIN_HOST:
+      from_secret: smtp_host
+    PLUGIN_USERNAME:
+      from_secret: smtp_username
+    PLUGIN_PASSWORD:
+      from_secret: smtp_password
+    PLUGIN_FROM:
+      from_secret: smtp_mail_address
+  image: docker.io/drillster/drone-email:latest
+  resources:
+    limits:
+      cpu: 50
+      memory: 25M
+  when:
+    status:
+    - changed
+    - failure
+
+trigger:
+  event:
+  - push
+  repo:
+  - volker.raschek/db-wait
