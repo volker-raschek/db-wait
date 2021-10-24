@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	_ "github.com/lib/pq"
-	_ "github.com/sijms/go-ora"
+	_ "github.com/sijms/go-ora/v2"
 )
 
 func Execute(version string) error {
