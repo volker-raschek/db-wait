@@ -11,7 +11,7 @@ steps:
 - name: markdown lint
   commands:
   - markdownlint *.md
-  image: docker.io/volkerraschek/markdownlint:0.28.1
+  image: docker.io/volkerraschek/markdownlint:0.29.0
   resources:
     limits:
       cpu: 50
@@ -41,6 +41,7 @@ trigger:
   event:
     exclude:
     - tag
+
 ---
 kind: pipeline
 type: docker
@@ -62,6 +63,7 @@ steps:
       from_secret: container_image_registry_user
     password:
       from_secret: container_image_registry_password
+    no_cache: true
   volumes:
   - name: docker_socket
     path: /var/run/docker.sock
@@ -87,19 +89,22 @@ volumes:
   host:
     path: /var/run/docker.sock
 
+depends_on:
+- linter
+
 trigger:
   branch:
   - master
   event:
-    exclude:
-    - tag
+  - cron
+  - push
   repo:
   - volker.raschek/db-wait
 
 ---
 kind: pipeline
 type: docker
-name: latest-armv7
+name: latest-arm-v7
 
 platform:
   os: linux
@@ -111,12 +116,13 @@ steps:
   settings:
     dockerfile: Dockerfile
     auto_tag: false
-    tags: latest-armv7
+    tags: latest-arm-v7
     repo: volkerraschek/db-wait
     username:
       from_secret: container_image_registry_user
     password:
       from_secret: container_image_registry_password
+    no_cache: true
 
 - name: notify
   image: drillster/drone-email
@@ -142,12 +148,15 @@ volumes:
   host:
     path: /var/run/docker.sock
 
+depends_on:
+- linter
+
 trigger:
   branch:
   - master
   event:
-    exclude:
-    - tag
+  - cron
+  - push
   repo:
   - volker.raschek/db-wait
 
@@ -190,16 +199,174 @@ steps:
 
 depends_on:
 - latest-amd64
-- latest-armv7
+- latest-arm-v7
 
 trigger:
   branch:
   - master
   event:
-    exclude:
-    - tag
+  - cron
+  - push
   repo:
   - volker.raschek/db-wait
+
+---
+kind: pipeline
+type: docker
+name: tagged-amd64
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build
+  image: plugins/docker
+  settings:
+    dockerfile: Dockerfile
+    auto_tag: true
+    auto_tag_suffix: amd64
+    repo: volkerraschek/db-wait
+    username:
+      from_secret: container_image_registry_user
+    password:
+      from_secret: container_image_registry_password
+    build_args:
+    - VERSION=${DRONE_TAG}
+    no_cache: true
+  volumes:
+  - name: docker_socket
+    path: /var/run/docker.sock
+
+- name: notify
+  image: drillster/drone-email
+  environment:
+    PLUGIN_HOST:
+      from_secret: smtp_host
+    PLUGIN_USERNAME:
+      from_secret: smtp_username
+    PLUGIN_PASSWORD:
+      from_secret: smtp_password
+    PLUGIN_FROM:
+      from_secret: smtp_mail_address
+  when:
+    status:
+    - changed
+    - failure
+
+volumes:
+- name: docker_socket
+  host:
+    path: /var/run/docker.sock
+
+trigger:
+  event:
+  - tag
+  repo:
+  - volker.raschek/db-wait
+
+---
+kind: pipeline
+type: docker
+name: tagged-arm-v7
+
+platform:
+  os: linux
+  arch: arm
+
+steps:
+- name: build
+  image: plugins/docker
+  settings:
+    dockerfile: Dockerfile
+    auto_tag: true
+    auto_tag_suffix: arm-v7
+    repo: volkerraschek/db-wait
+    username:
+      from_secret: container_image_registry_user
+    password:
+      from_secret: container_image_registry_password
+    build_args:
+    - VERSION=${DRONE_TAG}
+    no_cache: true
+  volumes:
+  - name: docker_socket
+    path: /var/run/docker.sock
+
+- name: notify
+  image: drillster/drone-email
+  environment:
+    PLUGIN_HOST:
+      from_secret: smtp_host
+    PLUGIN_USERNAME:
+      from_secret: smtp_username
+    PLUGIN_PASSWORD:
+      from_secret: smtp_password
+    PLUGIN_FROM:
+      from_secret: smtp_mail_address
+  when:
+    status:
+    - changed
+    - failure
+
+volumes:
+- name: docker_socket
+  host:
+    path: /var/run/docker.sock
+
+trigger:
+  event:
+  - tag
+  repo:
+  - volker.raschek/db-wait
+
+---
+kind: pipeline
+type: kubernetes
+name: tagged-manifest
+
+steps:
+- name: build-manifest
+  image: plugins/manifest
+  settings:
+    auto_tag: true
+    ignore_missing: true
+    spec: manifest.tmpl
+    username:
+      from_secret: container_image_registry_user
+    password:
+      from_secret: container_image_registry_password
+
+- name: notify
+  image: docker.io/drillster/drone-email:latest
+  environment:
+    PLUGIN_HOST:
+      from_secret: smtp_host
+    PLUGIN_USERNAME:
+      from_secret: smtp_username
+    PLUGIN_PASSWORD:
+      from_secret: smtp_password
+    PLUGIN_FROM:
+      from_secret: smtp_mail_address
+  resources:
+    limits:
+      cpu: 50
+      memory: 25M
+  when:
+    status:
+    - changed
+    - failure
+
+depends_on:
+- tagged-amd64
+- tagged-arm-v7
+
+trigger:
+  event:
+  - tag
+  repo:
+  - volker.raschek/db-wait
+
 ---
 kind: pipeline
 type: kubernetes
@@ -243,10 +410,14 @@ steps:
     - changed
     - failure
 
+depends_on:
+- latest-manifest
+
 trigger:
   branch:
   - master
   event:
+  - cron
   - push
   repo:
   - volker.raschek/db-wait
