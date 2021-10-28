@@ -1,4 +1,4 @@
-FROM docker.io/library/golang:1.17-alpine3.14 AS build
+FROM docker.io/library/golang:1.17-alpine3.13 AS build
 
 ARG VERSION=latest
 
@@ -11,7 +11,7 @@ RUN set -ex && \
     apk add git make && \
     make install VERSION=${VERSION} DESTDIR=/db-wait PREFIX=/usr
 
-FROM docker.io/library/alpine:3.14
+FROM docker.io/library/alpine:3.13
 
 COPY --from=build /db-wait /
 
