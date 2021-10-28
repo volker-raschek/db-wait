@@ -59,10 +59,6 @@ steps:
     dry_run: true
     tags: latest-amd64
     repo: volkerraschek/db-wait
-    username:
-      from_secret: container_image_registry_user
-    password:
-      from_secret: container_image_registry_password
     no_cache: true
   volumes:
   - name: docker_socket
@@ -99,8 +95,6 @@ trigger:
   event:
   - pull_request
   - push
-  repo:
-  - volker.raschek/db-wait
 
 ---
 kind: pipeline
@@ -120,10 +114,6 @@ steps:
     dry_run: true
     tags: latest-arm-v7
     repo: volkerraschek/db-wait
-    username:
-      from_secret: container_image_registry_user
-    password:
-      from_secret: container_image_registry_password
     no_cache: true
 
 - name: notify
@@ -160,8 +150,6 @@ trigger:
   event:
   - pull_request
   - push
-  repo:
-  - volker.raschek/db-wait
 
 ---
 kind: pipeline
@@ -181,10 +169,6 @@ steps:
     dry_run: true
     tags: latest-arm64-v8
     repo: volkerraschek/db-wait
-    username:
-      from_secret: container_image_registry_user
-    password:
-      from_secret: container_image_registry_password
     no_cache: true
 
 - name: notify
@@ -221,8 +205,6 @@ trigger:
   event:
   - pull_request
   - push
-  repo:
-  - volker.raschek/db-wait
 
 ---
 kind: pipeline
