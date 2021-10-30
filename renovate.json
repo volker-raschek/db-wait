@@ -3,6 +3,8 @@
   "automerge": false,
   "automergeStrategy": "merge-commit",
   "automergeType": "pr",
+  "rebaseLabel": "renovate/rebase",
+  "rebaseWhen": "behind-base-branch",
   "postUpdateOptions": [
     "gomodTidy"
   ]
