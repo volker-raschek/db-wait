@@ -3,6 +3,16 @@
   "automerge": false,
   "automergeStrategy": "merge-commit",
   "automergeType": "pr",
+  "labels": [ "renovate" ],
+  "packageRules": [
+    {
+      "description": "Automatically update minor and patch versions of go modules",
+      "addLabels": [ "renovate/gomod", "renovate/automerge" ],
+      "automerge": true,
+      "matchManagers": [ "gomod" ],
+      "matchUpdateTypes": [ "minor", "patch" ]
+    }
+  ],
   "rebaseLabel": "renovate/rebase",
   "rebaseWhen": "behind-base-branch",
   "postUpdateOptions": [
