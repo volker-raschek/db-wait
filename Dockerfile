@@ -11,7 +11,7 @@ RUN set -ex && \
     apk add git make && \
     make install VERSION=${VERSION} DESTDIR=/db-wait PREFIX=/usr
 
-FROM docker.io/library/alpine:3.14
+FROM docker.io/library/alpine:3.15
 
 COPY --from=build /db-wait /
 
