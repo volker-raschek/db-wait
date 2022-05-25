@@ -29,8 +29,8 @@ steps:
   image: docker.io/drillster/drone-email:latest
   resources:
     limits:
-      cpu: 50
-      memory: 25M
+      cpu: 150
+      memory: 150M
   when:
     status:
     - changed
