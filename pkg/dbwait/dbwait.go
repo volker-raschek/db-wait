@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -45,27 +44,18 @@ LOOP:
 
 			switch databaseURL.Scheme {
 			case "oracle":
-				row := sqlDB.QueryRowContext(queryCtx, "SELECT INSTANCE_NAME, STATUS, DATABASE_STATUS FROM V$INSTANCE WHERE INSTANCE_NAME=$1", databaseURL.Path)
+				row := sqlDB.QueryRowContext(queryCtx, "SELECT 1 FROM dual")
 
-				var instaceName string
-				var instanceStatus string
-				var databaseStatus string
-
-				err := row.Scan(instaceName, instanceStatus, databaseStatus)
+				var n int
+				err := row.Scan(&n)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "%s: %s\n", time.Now().String(), err.Error())
 					ticker.Reset(period)
 					continue LOOP
 				}
 
-				if strings.ToUpper(instanceStatus) != "OPEN" {
-					fmt.Fprintf(os.Stderr, "%s: Instance status is not open: %s\n", time.Now().String(), instanceStatus)
-					ticker.Reset(period)
-					continue LOOP
-				}
-
-				if strings.ToUpper(databaseStatus) != "OPEN" {
-					fmt.Fprintf(os.Stderr, "%s: Database status is not active: %s\n", time.Now().String(), databaseStatus)
+				if n != 1 {
+					fmt.Fprintf(os.Stderr, "%s: Returned value not 1\n", time.Now().String())
 					ticker.Reset(period)
 					continue LOOP
 				}
