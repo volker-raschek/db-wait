@@ -62,9 +62,6 @@ steps:
     tags: latest-amd64
     repo: volkerraschek/db-wait
     no_cache: true
-  volumes:
-  - name: docker_socket
-    path: /var/run/docker.sock
 
 - name: email-notification
   environment:
@@ -83,11 +80,6 @@ steps:
     status:
     - changed
     - failure
-
-volumes:
-- name: docker_socket
-  host:
-    path: /var/run/docker.sock
 
 depends_on:
 - linter
@@ -138,11 +130,6 @@ steps:
     - changed
     - failure
 
-volumes:
-- name: docker_socket
-  host:
-    path: /var/run/docker.sock
-
 depends_on:
 - linter
 
@@ -192,11 +179,6 @@ steps:
     - changed
     - failure
 
-volumes:
-- name: docker_socket
-  host:
-    path: /var/run/docker.sock
-
 depends_on:
 - linter
 
@@ -230,9 +212,6 @@ steps:
     password:
       from_secret: container_image_registry_password
     no_cache: true
-  volumes:
-  - name: docker_socket
-    path: /var/run/docker.sock
 
 - name: email-notification
   environment:
@@ -251,11 +230,6 @@ steps:
     status:
     - changed
     - failure
-
-volumes:
-- name: docker_socket
-  host:
-    path: /var/run/docker.sock
 
 depends_on:
 - linter
@@ -310,11 +284,6 @@ steps:
     - changed
     - failure
 
-volumes:
-- name: docker_socket
-  host:
-    path: /var/run/docker.sock
-
 depends_on:
 - linter
 
@@ -367,11 +336,6 @@ steps:
     status:
     - changed
     - failure
-
-volumes:
-- name: docker_socket
-  host:
-    path: /var/run/docker.sock
 
 depends_on:
 - linter
@@ -458,9 +422,6 @@ steps:
     build_args:
     - VERSION=${DRONE_TAG}
     no_cache: true
-  volumes:
-  - name: docker_socket
-    path: /var/run/docker.sock
 
 - name: email-notification
   environment:
@@ -479,11 +440,6 @@ steps:
     status:
     - changed
     - failure
-
-volumes:
-- name: docker_socket
-  host:
-    path: /var/run/docker.sock
 
 trigger:
   event:
@@ -515,9 +471,6 @@ steps:
     build_args:
     - VERSION=${DRONE_TAG}
     no_cache: true
-  volumes:
-  - name: docker_socket
-    path: /var/run/docker.sock
 
 - name: email-notification
   environment:
@@ -536,11 +489,6 @@ steps:
     status:
     - changed
     - failure
-
-volumes:
-- name: docker_socket
-  host:
-    path: /var/run/docker.sock
 
 trigger:
   event:
@@ -572,9 +520,6 @@ steps:
     build_args:
     - MARKDOWNLINT_VERSION=${DRONE_TAG}
     no_cache: true
-  volumes:
-  - name: docker_socket
-    path: /var/run/docker.sock
 
 - name: email-notification
   environment:
@@ -593,11 +538,6 @@ steps:
     status:
     - changed
     - failure
-
-volumes:
-- name: docker_socket
-  host:
-    path: /var/run/docker.sock
 
 trigger:
   event:
