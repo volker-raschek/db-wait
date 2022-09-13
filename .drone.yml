@@ -18,15 +18,17 @@ steps:
 
 - name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
-  image: docker.io/drillster/drone-email:latest
+  image: docker.io/volkerraschek/drone-email:0.1.1
   resources:
     limits:
       cpu: 150
@@ -64,17 +66,19 @@ steps:
   - name: docker_socket
     path: /var/run/docker.sock
 
-- name: notify
-  image: docker.io/drillster/drone-email:latest
+- name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
+  image: docker.io/volkerraschek/drone-email:0.1.1
   when:
     status:
     - changed
@@ -116,20 +120,19 @@ steps:
     repo: volkerraschek/db-wait
     no_cache: true
 
-- name: notify
-  image: docker.io/drillster/drone-email:latest
+- name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
-  volumes:
-  - name: docker_socket
-    path: /var/run/docker.sock
+  image: docker.io/volkerraschek/drone-email:0.1.1
   when:
     status:
     - changed
@@ -171,20 +174,19 @@ steps:
     repo: volkerraschek/db-wait
     no_cache: true
 
-- name: notify
-  image: docker.io/drillster/drone-email:latest
+- name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
-  volumes:
-  - name: docker_socket
-    path: /var/run/docker.sock
+  image: docker.io/volkerraschek/drone-email:0.1.1
   when:
     status:
     - changed
@@ -232,17 +234,19 @@ steps:
   - name: docker_socket
     path: /var/run/docker.sock
 
-- name: notify
-  image: docker.io/drillster/drone-email:latest
+- name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
+  image: docker.io/volkerraschek/drone-email:0.1.1
   when:
     status:
     - changed
@@ -288,20 +292,19 @@ steps:
       from_secret: container_image_registry_password
     no_cache: true
 
-- name: notify
-  image: docker.io/drillster/drone-email:latest
+- name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
-  volumes:
-  - name: docker_socket
-    path: /var/run/docker.sock
+  image: docker.io/volkerraschek/drone-email:0.1.1
   when:
     status:
     - changed
@@ -347,20 +350,19 @@ steps:
       from_secret: container_image_registry_password
     no_cache: true
 
-- name: notify
-  image: docker.io/drillster/drone-email:latest
+- name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
-  volumes:
-  - name: docker_socket
-    path: /var/run/docker.sock
+  image: docker.io/volkerraschek/drone-email:0.1.1
   when:
     status:
     - changed
@@ -400,21 +402,19 @@ steps:
     password:
       from_secret: container_image_registry_password
 
-- name: notify
-  image: docker.io/drillster/drone-email:latest
+- name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
-  resources:
-    limits:
-      cpu: 50
-      memory: 25M
+  image: docker.io/volkerraschek/drone-email:0.1.1
   when:
     status:
     - changed
@@ -462,17 +462,19 @@ steps:
   - name: docker_socket
     path: /var/run/docker.sock
 
-- name: notify
-  image: docker.io/drillster/drone-email:latest
+- name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
+  image: docker.io/volkerraschek/drone-email:0.1.1
   when:
     status:
     - changed
@@ -517,17 +519,19 @@ steps:
   - name: docker_socket
     path: /var/run/docker.sock
 
-- name: notify
-  image: docker.io/drillster/drone-email:latest
+- name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
+  image: docker.io/volkerraschek/drone-email:0.1.1
   when:
     status:
     - changed
@@ -572,17 +576,19 @@ steps:
   - name: docker_socket
     path: /var/run/docker.sock
 
-- name: notify
-  image: docker.io/drillster/drone-email:latest
+- name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
+  image: docker.io/volkerraschek/drone-email:0.1.1
   when:
     status:
     - changed
@@ -616,21 +622,23 @@ steps:
     password:
       from_secret: container_image_registry_password
 
-- name: notify
-  image: docker.io/drillster/drone-email:latest
+- name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
+  image: docker.io/volkerraschek/drone-email:0.1.1
   resources:
     limits:
-      cpu: 50
-      memory: 25M
+      cpu: 150
+      memory: 150M
   when:
     status:
     - changed
@@ -672,19 +680,21 @@ steps:
 
 - name: email-notification
   environment:
-    PLUGIN_HOST:
+    SMTP_FROM_ADDRESS:
+      from_secret: smtp_from_address
+    SMTP_FROM_NAME:
+      from_secret: smtp_from_name
+    SMTP_HOST:
       from_secret: smtp_host
-    PLUGIN_USERNAME:
+    SMTP_USERNAME:
       from_secret: smtp_username
-    PLUGIN_PASSWORD:
+    SMTP_PASSWORD:
       from_secret: smtp_password
-    PLUGIN_FROM:
-      from_secret: smtp_mail_address
-  image: docker.io/drillster/drone-email:latest
+  image: docker.io/volkerraschek/drone-email:0.1.1
   resources:
     limits:
-      cpu: 50
-      memory: 25M
+      cpu: 150
+      memory: 150M
   when:
     status:
     - changed
