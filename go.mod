@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/lib/pq v1.10.7
-	github.com/sijms/go-ora/v2 v2.5.16
+	github.com/sijms/go-ora/v2 v2.5.17
 	github.com/spf13/cobra v1.6.1
 )
 
