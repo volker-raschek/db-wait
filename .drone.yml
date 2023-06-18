@@ -34,7 +34,7 @@ steps:
       from_secret: smtp_username
     SMTP_PASSWORD:
       from_secret: smtp_password
-  image: git.cryptic.systems/volker.raschek/drone-email:0.1.1
+  image: git.cryptic.systems/volker.raschek/drone-email:0.1.2
   resources:
     limits:
       cpu: 150
@@ -99,7 +99,7 @@ steps:
       from_secret: smtp_username
     SMTP_PASSWORD:
       from_secret: smtp_password
-  image: git.cryptic.systems/volker.raschek/drone-email:0.1.1
+  image: git.cryptic.systems/volker.raschek/drone-email:0.1.2
   when:
     status:
     - changed
@@ -165,7 +165,7 @@ steps:
       from_secret: smtp_username
     SMTP_PASSWORD:
       from_secret: smtp_password
-  image: git.cryptic.systems/volker.raschek/drone-email:0.1.1
+  image: git.cryptic.systems/volker.raschek/drone-email:0.1.2
   when:
     status:
     - changed
@@ -231,7 +231,7 @@ steps:
       from_secret: smtp_username
     SMTP_PASSWORD:
       from_secret: smtp_password
-  image: git.cryptic.systems/volker.raschek/drone-email:0.1.1
+  image: git.cryptic.systems/volker.raschek/drone-email:0.1.2
   when:
     status:
     - changed
@@ -296,7 +296,7 @@ steps:
       from_secret: smtp_username
     SMTP_PASSWORD:
       from_secret: smtp_password
-  image: git.cryptic.systems/volker.raschek/drone-email:0.1.1
+  image: git.cryptic.systems/volker.raschek/drone-email:0.1.2
   when:
     status:
     - changed
@@ -360,7 +360,7 @@ steps:
       from_secret: smtp_username
     SMTP_PASSWORD:
       from_secret: smtp_password
-  image: git.cryptic.systems/volker.raschek/drone-email:0.1.1
+  image: git.cryptic.systems/volker.raschek/drone-email:0.1.2
   when:
     status:
     - changed
@@ -424,7 +424,7 @@ steps:
       from_secret: smtp_username
     SMTP_PASSWORD:
       from_secret: smtp_password
-  image: git.cryptic.systems/volker.raschek/drone-email:0.1.1
+  image: git.cryptic.systems/volker.raschek/drone-email:0.1.2
   when:
     status:
     - changed
@@ -611,7 +611,7 @@ steps:
       from_secret: smtp_username
     SMTP_PASSWORD:
       from_secret: smtp_password
-  image: git.cryptic.systems/volker.raschek/drone-email:0.1.1
+  image: git.cryptic.systems/volker.raschek/drone-email:0.1.2
   when:
     status:
     - changed
@@ -671,7 +671,7 @@ steps:
       from_secret: smtp_username
     SMTP_PASSWORD:
       from_secret: smtp_password
-  image: git.cryptic.systems/volker.raschek/drone-email:0.1.1
+  image: git.cryptic.systems/volker.raschek/drone-email:0.1.2
   when:
     status:
     - changed
@@ -731,7 +731,7 @@ steps:
       from_secret: smtp_username
     SMTP_PASSWORD:
       from_secret: smtp_password
-  image: git.cryptic.systems/volker.raschek/drone-email:0.1.1
+  image: git.cryptic.systems/volker.raschek/drone-email:0.1.2
   when:
     status:
     - changed
@@ -845,7 +845,7 @@ steps:
       from_secret: smtp_username
     SMTP_PASSWORD:
       from_secret: smtp_password
-  image: git.cryptic.systems/volker.raschek/drone-email:0.1.1
+  image: git.cryptic.systems/volker.raschek/drone-email:0.1.2
   resources:
     limits:
       cpu: 150
