@@ -9,7 +9,6 @@
       "description": "Automatically update minor and patch versions of used drone-ci images",
       "addLabels": [ "renovate/droneci", "renovate/automerge" ],
       "automerge": true,
-      "excludePackagePatterns": [ "plugins/docker" ],
       "matchManagers": "droneci",
       "matchUpdateTypes": [ "minor", "patch"]
     },
