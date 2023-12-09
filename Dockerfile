@@ -1,4 +1,4 @@
-FROM docker.io/library/golang:1.17-alpine3.13 AS build
+FROM docker.io/library/golang:1.21.4-alpine3.18 AS build
 
 ARG VERSION=latest
 
@@ -11,7 +11,15 @@ RUN set -ex && \
     apk add git make && \
     make install VERSION=${VERSION} DESTDIR=/db-wait PREFIX=/usr
 
-FROM docker.io/library/alpine:3.18
+FROM docker.io/library/alpine:3.19
+
+LABEL org.opencontainers.image.authors="Markus Pesch" \
+      org.opencontainers.image.description="Wait until database is ready for handling connections" \
+      org.opencontainers.image.documentation="https://git.cryptic.systems/volker.raschek/db-wait#db-wait" \
+      org.opencontainers.image.source="https://git.cryptic.systems/volker.raschek/db-wait" \
+      org.opencontainers.image.title="db-wait" \
+      org.opencontainers.image.url="https://git.cryptic.systems/volker.raschek/db-wait" \
+      org.opencontainers.image.vendor="Markus Pesch"
 
 COPY --from=build /db-wait /
 
