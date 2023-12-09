@@ -13,13 +13,16 @@ RUN set -ex && \
 
 FROM docker.io/library/alpine:3.19
 
+ARG VERSION=latest
+
 LABEL org.opencontainers.image.authors="Markus Pesch" \
       org.opencontainers.image.description="Wait until database is ready for handling connections" \
       org.opencontainers.image.documentation="https://git.cryptic.systems/volker.raschek/db-wait#db-wait" \
       org.opencontainers.image.source="https://git.cryptic.systems/volker.raschek/db-wait" \
       org.opencontainers.image.title="db-wait" \
       org.opencontainers.image.url="https://git.cryptic.systems/volker.raschek/db-wait" \
-      org.opencontainers.image.vendor="Markus Pesch"
+      org.opencontainers.image.vendor="Markus Pesch" \
+      org.opencontainers.image.version="${VERSION}"
 
 COPY --from=build /db-wait /
 
