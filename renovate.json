@@ -35,7 +35,6 @@
       "description": "Automatically update minor and patch versions of go modules",
       "addLabels": [ "renovate/gomod", "renovate/automerge" ],
       "automerge": true,
-      "matchBaseBranches": [ "master" ],
       "matchManagers": [ "gomod" ],
       "matchUpdateTypes": [ "minor", "patch" ]
     },
@@ -43,7 +42,6 @@
       "description": "Prepare MR for major update of go modules",
       "addLabels": [ "renovate/gomod" ],
       "automerge": false,
-      "matchBaseBranches": [ "master" ],
       "matchManagers": [ "gomod" ],
       "matchUpdateTypes": [ "major" ]
     }
