@@ -25,7 +25,7 @@ func Wait(databaseURL *url.URL, period time.Duration, timeout time.Duration) err
 			return err
 		}
 	}
-	defer sqlDB.Close()
+	defer func() { _ = sqlDB.Close() }()
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -63,12 +63,15 @@ LOOP:
 				return nil
 			case "postgres":
 				row := sqlDB.QueryRowContext(queryCtx, "SELECT 1 AS ROW")
-				if row.Err() != nil {
+				err := row.Err()
+				switch {
+				case err == nil:
+					return nil
+				default:
 					fmt.Fprintf(os.Stderr, "%s: %s\n", time.Now().String(), err.Error())
 					ticker.Reset(period)
 					continue LOOP
 				}
-				return nil
 			}
 		}
 	}

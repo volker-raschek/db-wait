@@ -1,50 +1,58 @@
-VERSION?=$(shell git describe --abbrev=0)+$(shell date +'%Y%m%d%H%I%S')
+EXECUTABLE=db-wait
+VERSION?=$(shell git describe --abbrev=0)+hash.$(shell git rev-parse --short HEAD)
 
-EXECUTABLE:=db-wait
-
+# Destination directory and prefix to place the compiled binaries, documentaions
+# and other files.
 DESTDIR?=
 PREFIX?=/usr/local
 
-# BINARIES
-# ==============================================================================
-all: ${EXECUTABLE}
+# CONTAINER_RUNTIME
+# The CONTAINER_RUNTIME variable will be used to specified the path to a
+# container runtime. This is needed to start and run a container image.
+CONTAINER_RUNTIME?=$(shell which podman)
 
-${EXECUTABLE}:
+# DB_WAIT_IMAGE_REGISTRY_NAME
+# Defines the name of the new container to be built using several variables.
+DB_WAIT_IMAGE_REGISTRY_NAME:=git.cryptic.systems
+DB_WAIT_IMAGE_REGISTRY_USER:=volker.raschek
+
+DB_WAIT_IMAGE_NAMESPACE?=${DB_WAIT_IMAGE_REGISTRY_USER}
+DB_WAIT_IMAGE_NAME:=${EXECUTABLE}
+DB_WAIT_IMAGE_VERSION?=latest
+DB_WAIT_IMAGE_FULLY_QUALIFIED=${DB_WAIT_IMAGE_REGISTRY_NAME}/${DB_WAIT_IMAGE_NAMESPACE}/${DB_WAIT_IMAGE_NAME}:${DB_WAIT_IMAGE_VERSION}
+
+# BIN
+# ==============================================================================
+db-wait:
+	CGO_ENABLED=1 \
 	GOPROXY=$(shell go env GOPROXY) \
-	GOPRIVATE=$(shell go env GOPRIVATE) \
-		go build -ldflags "-X main.version=${VERSION:v%=%}" -o ${@}
-
-# UN/INSTALL
-# ==============================================================================
-PHONY+=install
-install: ${EXECUTABLE}
-	install --directory ${DESTDIR}${PREFIX}/bin
-	install --mode 755 ${EXECUTABLE} ${DESTDIR}${PREFIX}/bin/${EXECUTABLE}
-
-	install --directory ${DESTDIR}${PREFIX}/licenses/${EXECUTABLE}
-	install --mode 644 LICENSE ${DESTDIR}${PREFIX}/licenses/${EXECUTABLE}/LICENSE
-
-PHONY+=uninstall
-uninstall:
-	-rm --recursive --force \
-		${DESTDIR}${PREFIX}/bin/${EXECUTABLE} \
-		${DESTDIR}${PREFIX}/licenses/${EXECUTABLE}/LICENSE
+		go build -ldflags "-X 'main.version=${VERSION}'" -o ${@} main.go
 
 # CLEAN
 # ==============================================================================
 PHONY+=clean
 clean:
-	rm --force --recursive ${EXECUTABLE}* || true
+	rm --force --recursive db-wait
 
-# TEST
+# TESTS
 # ==============================================================================
 PHONY+=test/unit
 test/unit:
-	go test -v -race -coverprofile=coverage.txt -covermode=atomic -timeout 600s -count=1 ./pkg/...
+	CGO_ENABLED=0 \
+	GOPROXY=$(shell go env GOPROXY) \
+		go test -v -p 1 -coverprofile=coverage.txt -covermode=count -timeout 1200s ./pkg/...
+
+PHONY+=test/integration
+test/integration:
+	CGO_ENABLED=0 \
+	GOPROXY=$(shell go env GOPROXY) \
+		go test -v -p 1 -count=1 -timeout 1200s ./it/...
 
 PHONY+=test/coverage
 test/coverage: test/unit
-	go tool cover -html=coverage.txt
+	CGO_ENABLED=0 \
+	GOPROXY=$(shell go env GOPROXY) \
+		go tool cover -html=coverage.txt
 
 # GOLANGCI-LINT
 # ==============================================================================
@@ -52,11 +60,52 @@ PHONY+=golangci-lint
 golangci-lint:
 	golangci-lint run --concurrency=$(shell nproc)
 
-# GOSEC
+# INSTALL
 # ==============================================================================
-PHONY+=gosec
-gosec:
-	gosec $(shell pwd)/...
+PHONY+=uninstall
+install: db-wait
+	install --directory ${DESTDIR}/etc/bash_completion.d
+	./db-wait completion bash > ${DESTDIR}/etc/bash_completion.d/${EXECUTABLE}
+
+	install --directory ${DESTDIR}${PREFIX}/bin
+	install --mode 0755 ${EXECUTABLE} ${DESTDIR}${PREFIX}/bin/${EXECUTABLE}
+
+	install --directory ${DESTDIR}${PREFIX}/share/licenses/${EXECUTABLE}
+	install --mode 0644 LICENSE ${DESTDIR}${PREFIX}/share/licenses/${EXECUTABLE}/LICENSE
+
+# UNINSTALL
+# ==============================================================================
+PHONY+=uninstall
+uninstall:
+	-rm --force --recursive \
+		${DESTDIR}/etc/bash_completion.d/${EXECUTABLE} \
+		${DESTDIR}${PREFIX}/bin/${EXECUTABLE} \
+		${DESTDIR}${PREFIX}/share/licenses/${EXECUTABLE}
+
+# BUILD CONTAINER IMAGE
+# ==============================================================================
+PHONY+=container-image/build
+container-image/build:
+	${CONTAINER_RUNTIME} build \
+		--build-arg VERSION=${VERSION} \
+		--file Dockerfile \
+		--no-cache \
+		--pull \
+		--tag ${DB_WAIT_IMAGE_FULLY_QUALIFIED} \
+		.
+
+# DELETE CONTAINER IMAGE
+# ==============================================================================
+PHONY:=container-image/delete
+container-image/delete:
+	- ${CONTAINER_RUNTIME} image rm ${DB_WAIT_IMAGE_FULLY_QUALIFIED}
+
+# PUSH CONTAINER IMAGE
+# ==============================================================================
+PHONY+=container-image/push
+container-image/push:
+	echo ${DB_WAIT_IMAGE_REGISTRY_PASSWORD} | ${CONTAINER_RUNTIME} login ${DB_WAIT_IMAGE_REGISTRY_NAME} --username ${DB_WAIT_IMAGE_REGISTRY_USER} --password-stdin
+	${CONTAINER_RUNTIME} push ${DB_WAIT_IMAGE_FULLY_QUALIFIED}
 
 # PHONY
 # ==============================================================================

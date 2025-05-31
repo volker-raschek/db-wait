@@ -1,27 +1,5 @@
-FROM docker.io/library/golang:1.22.3-alpine3.18 AS build
+FROM docker.io/library/alpine:3.22.0
 
-ARG VERSION=latest
-
-COPY . /workspace
-
-WORKDIR /workspace
-
-RUN set -ex && \
-    apk update && \
-    apk add git make && \
-    make install VERSION=${VERSION} DESTDIR=/db-wait PREFIX=/usr
-
-FROM docker.io/library/alpine:3.21
-
-ARG VERSION=latest
-
-LABEL org.opencontainers.image.authors="Markus Pesch" \
-      org.opencontainers.image.description="Wait until database is ready for handling connections" \
-      org.opencontainers.image.documentation="https://git.cryptic.systems/volker.raschek/db-wait#db-wait" \
-      org.opencontainers.image.title="db-wait" \
-      org.opencontainers.image.vendor="Markus Pesch" \
-      org.opencontainers.image.version="${VERSION}"
-
-COPY --from=build /db-wait /
+COPY db-wait-* /usr/bin/db-wait
 
 ENTRYPOINT [ "/usr/bin/db-wait" ]
