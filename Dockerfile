@@ -1,4 +1,4 @@
-FROM docker.io/library/alpine:3.22.0
+FROM scratch
 
 COPY db-wait-* /usr/bin/db-wait
 
