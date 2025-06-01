@@ -64,8 +64,8 @@ LOOP:
 			case "postgres":
 				row := sqlDB.QueryRowContext(queryCtx, "SELECT 1 AS ROW")
 				err := row.Err()
-				switch {
-				case err == nil:
+				switch err {
+				case nil:
 					return nil
 				default:
 					fmt.Fprintf(os.Stderr, "%s: %s\n", time.Now().String(), err.Error())
