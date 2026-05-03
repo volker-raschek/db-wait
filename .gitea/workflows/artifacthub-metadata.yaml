@@ -22,7 +22,7 @@ jobs:
         password: ${{ secrets.DOCKER_IO_PASSWORD }}
     - uses: oras-project/setup-oras@v2.0.0
       with:
-        version: 1.3.2 # renovate: datasource=github-tags depName=oras-project/oras extractVersion='^v?(?<version>.*)$'
+        version: 1.3.1 # renovate: datasource=github-tags depName=oras-project/oras extractVersion='^v?(?<version>.*)$'
     - name: Push artifacthub-repo.yml to git.cryptic.systems
       run: |
         oras push git.cryptic.systems/volker.raschek/db-wait:artifacthub.io \
