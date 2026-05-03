@@ -49,10 +49,10 @@ test/integration:
 		go test -v -p 1 -count=1 -timeout 1200s ./it/...
 
 PHONY+=test/coverage
-test/coverage: test/unit
+test/coverage:
 	CGO_ENABLED=0 \
 	GOPROXY=$(shell go env GOPROXY) \
-		go tool cover -html=coverage.txt
+		go tool cover -func=coverage.txt
 
 # GOLANGCI-LINT
 # ==============================================================================
