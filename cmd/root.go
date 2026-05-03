@@ -14,6 +14,7 @@ func Execute(version string) error {
 		Short: "Tool to wait until a connection to a database can be established",
 		Args:  cobra.ExactArgs(1),
 		RunE:  rootRunE,
+		//#nosec G101
 		Long: `Wait until a database connection can be established and returns a zero exit code if successfully
 
 # Wait until oracle database is ready to establish connections
