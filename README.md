@@ -1,5 +1,6 @@
 # db-wait
 
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/db-wait)](https://artifacthub.io/packages/search?repo=db-wait)
 [![Docker Pulls](https://img.shields.io/docker/pulls/volkerraschek/db-wait)](https://hub.docker.com/r/volkerraschek/db-wait)
 
 With `db-wait` is it possible to wait in CI/CD environments until a database connection can be established and SQL
