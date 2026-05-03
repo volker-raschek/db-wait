@@ -1,7 +1,17 @@
 project_name: db-wait
 
 archives:
-- formats: [ "tar.xz" ]
+- id: archives
+  formats:
+  - tar.xz
+  name_template: >-
+    {{ .ProjectName }}-
+    {{- .Version }}-
+    {{- .Os }}-
+    {{- if eq .Arch "amd64" }}amd64
+    {{- else if eq .Arch "amd64_v1" }}amd64
+    {{- else }}{{ .Arch }}{{ end }}
+    {{- if .Arm }}-{{ .Arm }}{{ end }}
   files:
   - README.md
   - LICENSE
@@ -11,15 +21,9 @@ before:
   - go mod tidy
 
 builds:
-- main: main.go
-  binary: >-
-    {{ .ProjectName }}-
-    {{- .Version }}-
-    {{- .Os }}-
-    {{- if eq .Arch "amd64" }}amd64
-    {{- else if eq .Arch "amd64_v1" }}amd64
-    {{- else }}{{ .Arch }}{{ end }}
-    {{- if .Arm }}-{{ .Arm }}{{ end }}
+- id: db-wait
+  main: main.go
+  binary: db-wait
   env:
   - CGO_ENABLED=0
   - GONOSUMDB={{ .Env.GONOSUMDB }}
@@ -32,17 +36,19 @@ builds:
   - arm64
   - riscv64
   goarm:
+  - "5"
   - "6"
   - "7"
   flags:
   - -trimpath
+  - -mod=readonly
+  - -modcacherw
   ldflags:
-  - -s -w -X 'main.version={{ trimprefix .Tag "v" }}'
+  - -s -w -X 'main.version={{ .Version }}'
 
 changelog:
   filters:
     exclude:
-    - '^chore'
     - '^docs'
     - '^test'
     - Merge pull request
@@ -56,117 +62,304 @@ changelog:
   - title: "Bug fixes"
     regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
     order: 1
+  - title: Dependencies
+    regexp: '^.*?chore\(deps\):.+$'
+    order: 2
   - title: Others
     order: 999
   sort: asc
   use: git
 
-dockers:
-- build_flag_templates:
-  - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
-  - --label=org.opencontainers.image.description={{ .ProjectName }}
-  - --label=org.opencontainers.image.documentation={{ .ProjectName }}
-  - --label=org.opencontainers.image.revision={{ .FullCommit }}
-  - --label=org.opencontainers.image.source={{ .GitURL }}
-  - --label=org.opencontainers.image.title={{ .ProjectName }}
-  - --label=org.opencontainers.image.url=https://git.cryptic.systems/volker.raschek/{{ .ProjectName }}
-  - --label=org.opencontainers.image.version={{ trimprefix .Tag "v" }}
-  - --platform=linux/amd64
-  - --pull
-  dockerfile: Dockerfile
-  goarch: amd64
-  goos: linux
-  image_templates:
-  - 'git.cryptic.systems/volker.raschek/{{ .ProjectName }}:{{ trimprefix .Tag "v" }}-amd64'
-  skip_push: false
-  use: buildx
+dockers_v2:
+- # ID of the image, needed if you want to filter by it later on (e.g. on custom publishers).
+  # Default: project name
+  id: container-images
 
-- build_flag_templates:
-  - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
-  - --label=org.opencontainers.image.description={{ .ProjectName }}
-  - --label=org.opencontainers.image.documentation={{ .ProjectName }}
-  - --label=org.opencontainers.image.revision={{ .FullCommit }}
-  - --label=org.opencontainers.image.source={{ .GitURL }}
-  - --label=org.opencontainers.image.title={{ .ProjectName }}
-  - --label=org.opencontainers.image.url=https://git.cryptic.systems/volker.raschek/{{ .ProjectName }}
-  - --label=org.opencontainers.image.version={{ trimprefix .Tag "v" }}
-  - --platform=linux/arm/v6
-  - --pull
-  dockerfile: Dockerfile
-  goarch: arm
-  goarm: "6"
-  goos: linux
-  image_templates:
-  - 'git.cryptic.systems/volker.raschek/{{ .ProjectName }}:{{ trimprefix .Tag "v" }}-arm-v6'
-  skip_push: false
-  use: buildx
+  # Path to the Dockerfile (from the project root).
+  dockerfile: Dockerfile.scratch
 
-- build_flag_templates:
-  - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
-  - --label=org.opencontainers.image.description={{ .ProjectName }}
-  - --label=org.opencontainers.image.documentation={{ .ProjectName }}
-  - --label=org.opencontainers.image.revision={{ .FullCommit }}
-  - --label=org.opencontainers.image.source={{ .GitURL }}
-  - --label=org.opencontainers.image.title={{ .ProjectName }}
-  - --label=org.opencontainers.image.url=https://git.cryptic.systems/volker.raschek/{{ .ProjectName }}
-  - --label=org.opencontainers.image.version={{ trimprefix .Tag "v" }}
-  - --platform=linux/arm/v7
-  - --pull
-  dockerfile: Dockerfile
-  goarch: arm
-  goarm: "7"
-  goos: linux
-  image_templates:
-  - 'git.cryptic.systems/volker.raschek/{{ .ProjectName }}:{{ trimprefix .Tag "v" }}-arm-v7'
-  skip_push: false
-  use: buildx
+  # IDs to filter the binaries/packages.
+  #
+  # Make sure to only include the IDs of binaries you want to `COPY` in your
+  # Dockerfile.
+  #
+  # If you include IDs that don't exist or are not available for the current
+  # architecture being built, the build of the image will be skipped.
+  ids:
+  - db-wait
 
-- build_flag_templates:
-  - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
-  - --label=org.opencontainers.image.description={{ .ProjectName }}
-  - --label=org.opencontainers.image.documentation={{ .ProjectName }}
-  - --label=org.opencontainers.image.revision={{ .FullCommit }}
-  - --label=org.opencontainers.image.source={{ .GitURL }}
-  - --label=org.opencontainers.image.title={{ .ProjectName }}
-  - --label=org.opencontainers.image.url=https://git.cryptic.systems/volker.raschek/{{ .ProjectName }}
-  - --label=org.opencontainers.image.version={{ trimprefix .Tag "v" }}
-  - --platform=linux/arm64
-  - --pull
-  dockerfile: Dockerfile
-  goarch: arm64
-  goos: linux
-  image_templates:
-  - 'git.cryptic.systems/volker.raschek/{{ .ProjectName }}:{{ trimprefix .Tag "v" }}-arm64'
-  skip_push: false
-  use: buildx
+  # Annotations to be added to the image.
+  annotations:
+    org.opencontainers.image.authors: "Volker Raschek"
+    org.opencontainers.image.created: "{{ .Date }}"
+    org.opencontainers.image.description: "{{ .ProjectName }}"
+    org.opencontainers.image.documentation: "{{ .ProjectName }}"
+    org.opencontainers.image.licenses: "MIT"
+    org.opencontainers.image.revision: "{{ .FullCommit }}"
+    org.opencontainers.image.source: "{{ .GitURL }}"
+    org.opencontainers.image.title: "{{ .ProjectName }}"
+    org.opencontainers.image.url: "https://git.cryptic.systems/volker.raschek/{{ .ProjectName }}"
+    org.opencontainers.image.vendor: "Volker Raschek"
+    org.opencontainers.image.version: "{{ .Version }}"
 
-- build_flag_templates:
-  - --label=org.opencontainers.image.created={{ time "2006-01-02T15:04:05Z07:00" }}
-  - --label=org.opencontainers.image.description={{ .ProjectName }}
-  - --label=org.opencontainers.image.documentation={{ .ProjectName }}
-  - --label=org.opencontainers.image.revision={{ .FullCommit }}
-  - --label=org.opencontainers.image.source={{ .GitURL }}
-  - --label=org.opencontainers.image.title={{ .ProjectName }}
-  - --label=org.opencontainers.image.url=https://git.cryptic.systems/volker.raschek/{{ .ProjectName }}
-  - --label=org.opencontainers.image.version={{ trimprefix .Tag "v" }}
-  - --platform=linux/riscv64
-  - --pull
-  dockerfile: Dockerfile
-  goarch: riscv64
-  goos: linux
-  image_templates:
-  - 'git.cryptic.systems/volker.raschek/{{ .ProjectName }}:{{ trimprefix .Tag "v" }}-riscv64'
-  skip_push: false
-  use: buildx
+    io.artifacthub.package.alternative-locations: "docker.io/volkerraschek/{{ .ProjectName }}:{{ .Version }}"
+    io.artifacthub.package.keywords: "docker,docker-compose,merge,ci"
+    io.artifacthub.package.logo-url: "https://git.cryptic.systems/volker.raschek/{{ .ProjectName }}/raw/tag/v{{ .Version }}/icons/icon.png"
+    io.artifacthub.package.license: "MIT"
+    io.artifacthub.package.readme-url: "https://git.cryptic.systems/volker.raschek/{{ .ProjectName }}/raw/tag/v{{ .Version }}/README.md"
 
-docker_manifests:
-- name_template: 'git.cryptic.systems/volker.raschek/{{ .ProjectName }}:{{ trimprefix .Tag "v" }}'
-  image_templates:
-  - 'git.cryptic.systems/volker.raschek/{{ .ProjectName }}:{{ trimprefix .Tag "v" }}-amd64'
-  - 'git.cryptic.systems/volker.raschek/{{ .ProjectName }}:{{ trimprefix .Tag "v" }}-arm-v6'
-  - 'git.cryptic.systems/volker.raschek/{{ .ProjectName }}:{{ trimprefix .Tag "v" }}-arm-v7'
-  - 'git.cryptic.systems/volker.raschek/{{ .ProjectName }}:{{ trimprefix .Tag "v" }}-arm64'
-  - 'git.cryptic.systems/volker.raschek/{{ .ProjectName }}:{{ trimprefix .Tag "v" }}-riscv64'
+  labels: {}
+
+  images:
+  - 'git.cryptic.systems/volker.raschek/{{ .ProjectName }}'
+
+  # Platforms to build.
+  platforms:
+  - linux/amd64
+  - linux/arm/v5
+  - linux/arm/v6
+  - linux/arm/v7
+  - linux/arm64
+  - linux/riscv64
+
+  # Whether to create and attach a SBOM to the image.
+  sbom: "{{ not .IsNightly }}"
+
+  # Tag names.
+  #
+  # Empty tags are ignored.
+  tags:
+  - "{{ .Version }}"
+  - "{{ if .IsNightly }}nightly{{ end }}"
+  - "{{ if not .IsNightly }}latest{{ end }}"
+
+# RPM packages
+nfpms:
+- id: nfpms
+  ids:
+  - db-wait
+  package_name: db-wait
+  file_name_template: "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{- if .Arm }}-{{ .Arm }}{{ end }}"
+  vendor: "Volker Raschek"
+  homepage: "https://git.cryptic.systems/volker.raschek/{{ .ProjectName }}"
+  maintainer: "Volker Raschek <volker.raschek@cryptic.systems>"
+  description: |-
+    db-wait is a tool to merge docker-compose files from multiple resources.
+    It supports merging local files and remote files via HTTP/HTTPS.
+  license: MIT
+  formats:
+  - deb
+  - rpm
+  dependencies:
+  - git
+  recommends:
+  - docker-compose
+  suggests:
+  - docker
+  bindir: /usr/bin
+  contents:
+  - src: ./README.md
+    dst: "/usr/share/doc/{{ .ProjectName }}/README.md"
+    file_info:
+      mode: 0644
+  # License
+  - src: ./LICENSE
+    dst: "/usr/share/doc/{{ .ProjectName }}/LICENSE"
+    file_info:
+      mode: 0644
+  - src: ./LICENSE
+    dst: "/usr/share/licenses/{{ .ProjectName }}/LICENSE"
+    file_info:
+      mode: 0644
+  # Create man page directory
+  - dst: /usr/share/man/man1
+    type: dir
+    file_info:
+      mode: 0755
+  rpm:
+    group: Development/Tools
+    summary: Tool to merge docker-compose files from multiple resources
+    compression: xz
+  deb:
+    lintian_overrides:
+    - statically-linked-binary
+    - changelog-file-missing-in-native-package
+
+sboms:
+- # ID of the sbom config, must be unique.
+  #
+  # Default: 'default'.
+  id: sboms-cyclonedx
+
+  # IDs of the artifacts to catalog.
+  #
+  # If `artifacts` is "source" or "any" then this fields has no effect.
+  ids:
+  - db-wait
+
+  # Which artifacts to catalog.
+  #
+  # Valid options are:
+  # - any:        let the SBOM tool decide which artifacts available in
+  #               the cwd should be cataloged
+  # - source:     source archive
+  # - package:    Linux packages (deb, rpm, apk, etc)
+  # - installer:  Windows MSI installers (Pro only)
+  # - diskimage:  macOS DMG disk images (Pro only)
+  # - archive:    archives from archive pipe
+  # - binary:     binaries output from the build stage
+  #
+  # Default: 'archive'.
+  artifacts: binary
+
+  # List of names of the SBOM documents created at this step
+  # (relative to the dist dir).
+  #
+  # Each element configured is made available as variables. For example:
+  #   documents: ["foo", "bar"]
+  #
+  # would make the following variables that can be referenced as template keys:
+  #   document0: "foo"
+  #   document1: "bar"
+  #
+  # Note that multiple sbom values are only allowed if the value of
+  # "artifacts" is "any".
+  #
+  # Default:
+  #   When "binary":   ["{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"]
+  #   When "any":      []
+  #   Otherwise:       ["{{ .ArtifactName }}.sbom.json"]
+  # Templates: allowed.
+  documents:
+  - "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{- if .Arm }}-{{ .Arm }}{{ end }}.cdx.json"
+
+  # Path to the SBOM generator command
+  #
+  # Note: the process CWD will be set to the same location as "dist"
+  #
+  # Default: 'syft'.
+  cmd: syft
+
+  # Command line arguments for the command
+  #
+  # Default: ["$artifact", "--output", "spdx-json=$document", "--enrich", "all"].
+  # Templates: allowed.
+  args:
+  - "$artifact"
+  - "--enrich=all"
+  - "--output=cyclonedx-json=$document"
+
+- # ID of the sbom config, must be unique.
+  #
+  # Default: 'default'.
+  id: sboms-spdx
+
+  # IDs of the artifacts to catalog.
+  #
+  # If `artifacts` is "source" or "any" then this fields has no effect.
+  ids:
+  - db-wait
+
+  # Which artifacts to catalog.
+  #
+  # Valid options are:
+  # - any:        let the SBOM tool decide which artifacts available in
+  #               the cwd should be cataloged
+  # - source:     source archive
+  # - package:    Linux packages (deb, rpm, apk, etc)
+  # - installer:  Windows MSI installers (Pro only)
+  # - diskimage:  macOS DMG disk images (Pro only)
+  # - archive:    archives from archive pipe
+  # - binary:     binaries output from the build stage
+  #
+  # Default: 'archive'.
+  artifacts: binary
+
+  # List of names of the SBOM documents created at this step
+  # (relative to the dist dir).
+  #
+  # Each element configured is made available as variables. For example:
+  #   documents: ["foo", "bar"]
+  #
+  # would make the following variables that can be referenced as template keys:
+  #   document0: "foo"
+  #   document1: "bar"
+  #
+  # Note that multiple sbom values are only allowed if the value of
+  # "artifacts" is "any".
+  #
+  # Default:
+  #   When "binary":   ["{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"]
+  #   When "any":      []
+  #   Otherwise:       ["{{ .ArtifactName }}.sbom.json"]
+  # Templates: allowed.
+  documents:
+  - "{{ .Binary }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{- if .Arm }}-{{ .Arm }}{{ end }}.spdx.json"
+
+  # Path to the SBOM generator command
+  #
+  # Note: the process CWD will be set to the same location as "dist"
+  #
+  # Default: 'syft'.
+  cmd: syft
+
+  # Command line arguments for the command
+  #
+  # Default: ["$artifact", "--output", "spdx-json=$document", "--enrich", "all"].
+  # Templates: allowed.
+  args:
+  - "$artifact"
+  - "--enrich=all"
+  - "--output=spdx-json=$document"
+
+docker_signs:
+- # ID of the sign config, must be unique.
+  # Only relevant if you want to produce some sort of signature file.
+  #
+  # Default: 'default'.
+  id: container-images
+
+  # Path to the signature command.
+  #
+  # Default: 'cosign'.
+  cmd: cosign
+
+  # Command line arguments for the command.
+  #
+  # Default: ["sign", "--key=cosign.key", "${artifact}@${digest}", "--yes"].
+  # Templates: allowed.
+  # Note: Using --registry-referrers-mode=legacy ensures signature is stored as sha256-<digest>.sig tag
+  # which is required by ArtifactHub to display the "Signed" badge
+  args:
+  - "sign"
+  - "--key=env://COSIGN_PRIVATE_KEY"
+  - "--yes"
+  - "${artifact}@${digest}"
+
+  # Which artifacts to sign.
+  #
+  #   all:       all artifacts
+  #   none:      no signing
+  #   images:    only docker images
+  #   manifests: only docker manifests
+  #   '':        images built by dockers_v2
+  #
+  # Default: ''.
+  artifacts: manifests
+
+  # IDs of the artifacts to sign.
+  ids:
+  - container-images
+
+  # Stdin data to be given to the signature command as stdin.
+  #
+  # Templates: allowed.
+  stdin: "{{ .Env.COSIGN_PASSPHRASE }}"
+
+  # StdinFile file to be given to the signature command as stdin.
+  # stdin_file: ./passphrase.key
+
+  output: true
 
 gitea_urls:
   api: https://git.cryptic.systems/api/v1

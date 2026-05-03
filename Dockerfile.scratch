@@ -1,0 +1,4 @@
+FROM scratch AS build
+ARG TARGETPLATFORM
+COPY "${TARGETPLATFORM}/db-wait" "/usr/bin/db-wait"
+ENTRYPOINT [ "/usr/bin/db-wait" ]

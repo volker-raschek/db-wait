@@ -1,4 +1,4 @@
-name: Update Docker Hub Description
+name: "Update Docker Hub Description"
 
 on:
   push:
@@ -8,8 +8,7 @@ on:
 
 jobs:
   update-description-on-hub-docker-io:
-    runs-on:
-    - ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6.0.2
     - uses: peter-evans/dockerhub-description@v5.0.0

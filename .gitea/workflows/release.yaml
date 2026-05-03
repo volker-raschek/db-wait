@@ -13,9 +13,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6.0.2
+      with:
+        fetch-depth: 0
+    - name: Install curl
+      run: apt-get update && apt-get install --yes curl
+    - name: Install syft
+      env:
+        SYFT_VERSION: "1.44.0" # renovate: datasource=github-releases depName=anchore/syft
+      run: |
+        OS="$(uname | tr '[:upper:]' '[:lower:]')"
+        ARCH="$(dpkg --print-architecture)"
+        curl \
+          --fail \
+          --location \
+          --silent \
+          --output syft_${SYFT_VERSION}_${OS}_${ARCH}.deb \
+            "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/syft_${SYFT_VERSION}_${OS}_${ARCH}.deb"
+        dpkg -i syft_${SYFT_VERSION}_${OS}_${ARCH}.deb
+        rm syft_${SYFT_VERSION}_${OS}_${ARCH}.deb
+    - uses: volker-raschek/cosign-installer@v4.1.2-rc3
+      with:
+        cosign-release: "v3.0.6" # renovate: datasource=github-tags depName=sigstore/cosign
     - uses: docker/setup-qemu-action@v4.0.0
       with:
         image: harbor.cryptic.systems/docker/tonistiigi/binfmt:latest
+    - uses: docker/setup-buildx-action@v4.0.0
     - uses: actions/setup-go@v6.4.0
       with:
         go-version: stable
@@ -25,15 +47,18 @@ jobs:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GIT_CRYPTIC_SYSTEMS_PACKAGE_REGISTRY_TOKEN }}
     - env:
+        COSIGN_PASSPHRASE: ${{ secrets.COSIGN_PASSPHRASE }}
+        COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
         GITEA_TOKEN: ${{ secrets.GIT_CRYPTIC_SYSTEMS_PACKAGE_REGISTRY_TOKEN }}
         GONOSUMDB: ${{ vars.GONOSUMDB }}
         GOPROXY: ${{ vars.GOPROXY }}
-      uses: goreleaser/goreleaser-action@v7.1.0
+      uses: goreleaser/goreleaser-action@v7.2.1
       with:
-        version: v2.15.3 # renovate: datasource=github-releases depName=goreleaser/goreleaser
+        version: v2.15.4 # renovate: datasource=github-releases depName=goreleaser/goreleaser
         args: release --clean
 
   sync-to-hub-docker-io:
+    name: "Upload Images to docker.io"
     needs:
     - release
     runs-on: ubuntu-latest
@@ -49,6 +74,6 @@ jobs:
           --dest-password ${{ secrets.DOCKER_IO_PASSWORD }} \
           --dest-username ${{ secrets.DOCKER_IO_USERNAME }} \
           --src-password ${{ secrets.GIT_CRYPTIC_SYSTEMS_PACKAGE_REGISTRY_TOKEN }} \
-          --src-username volker.raschek \
+          --src-username ${{ github.repository_owner }} \
             docker://git.cryptic.systems/volker.raschek/db-wait:${TAG} \
             docker://docker.io/volkerraschek/db-wait:${TAG}
