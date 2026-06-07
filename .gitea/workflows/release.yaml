@@ -19,7 +19,7 @@ jobs:
       run: apt-get update && apt-get install --yes curl
     - name: Install syft
       env:
-        SYFT_VERSION: "1.45.0" # renovate: datasource=github-releases depName=anchore/syft
+        SYFT_VERSION: "1.45.1" # renovate: datasource=github-releases depName=anchore/syft
       run: |
         OS="$(uname | tr '[:upper:]' '[:lower:]')"
         ARCH="$(dpkg --print-architecture)"
