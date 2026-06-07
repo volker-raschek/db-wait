@@ -6,21 +6,6 @@ VERSION?=$(shell git describe --abbrev=0)+hash.$(shell git rev-parse --short HEA
 DESTDIR?=
 PREFIX?=/usr/local
 
-# CONTAINER_RUNTIME
-# The CONTAINER_RUNTIME variable will be used to specified the path to a
-# container runtime. This is needed to start and run a container image.
-CONTAINER_RUNTIME?=$(shell which podman)
-
-# DB_WAIT_IMAGE_REGISTRY_NAME
-# Defines the name of the new container to be built using several variables.
-DB_WAIT_IMAGE_REGISTRY_NAME:=git.cryptic.systems
-DB_WAIT_IMAGE_REGISTRY_USER:=volker.raschek
-
-DB_WAIT_IMAGE_NAMESPACE?=${DB_WAIT_IMAGE_REGISTRY_USER}
-DB_WAIT_IMAGE_NAME:=${EXECUTABLE}
-DB_WAIT_IMAGE_VERSION?=latest
-DB_WAIT_IMAGE_FULLY_QUALIFIED=${DB_WAIT_IMAGE_REGISTRY_NAME}/${DB_WAIT_IMAGE_NAMESPACE}/${DB_WAIT_IMAGE_NAME}:${DB_WAIT_IMAGE_VERSION}
-
 # BIN
 # ==============================================================================
 db-wait:
@@ -81,31 +66,6 @@ uninstall:
 		${DESTDIR}/etc/bash_completion.d/${EXECUTABLE} \
 		${DESTDIR}${PREFIX}/bin/${EXECUTABLE} \
 		${DESTDIR}${PREFIX}/share/licenses/${EXECUTABLE}
-
-# BUILD CONTAINER IMAGE
-# ==============================================================================
-PHONY+=container-image/build
-container-image/build:
-	${CONTAINER_RUNTIME} build \
-		--build-arg VERSION=${VERSION} \
-		--file Dockerfile \
-		--no-cache \
-		--pull \
-		--tag ${DB_WAIT_IMAGE_FULLY_QUALIFIED} \
-		.
-
-# DELETE CONTAINER IMAGE
-# ==============================================================================
-PHONY:=container-image/delete
-container-image/delete:
-	- ${CONTAINER_RUNTIME} image rm ${DB_WAIT_IMAGE_FULLY_QUALIFIED}
-
-# PUSH CONTAINER IMAGE
-# ==============================================================================
-PHONY+=container-image/push
-container-image/push:
-	echo ${DB_WAIT_IMAGE_REGISTRY_PASSWORD} | ${CONTAINER_RUNTIME} login ${DB_WAIT_IMAGE_REGISTRY_NAME} --username ${DB_WAIT_IMAGE_REGISTRY_USER} --password-stdin
-	${CONTAINER_RUNTIME} push ${DB_WAIT_IMAGE_FULLY_QUALIFIED}
 
 # PHONY
 # ==============================================================================
