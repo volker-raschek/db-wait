@@ -5,6 +5,7 @@ go 1.24
 require (
 	github.com/lib/pq v1.12.3
 	github.com/sijms/go-ora/v2 v2.9.0
+	github.com/sijms/go-ora/v3 v3.0.0
 	github.com/spf13/cobra v1.10.2
 )
 
